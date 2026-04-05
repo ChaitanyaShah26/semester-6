@@ -1,0 +1,15 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+.vscode/
+.history/
+
+.DS_Store
+Thumbs.db
+
+*.log
+
+*.class
+
+.env
+application-*.properties
