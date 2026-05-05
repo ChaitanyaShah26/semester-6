@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage NoSQL</title>
+    <!-- Using Bootstrap 5 for clean and intuitive UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .shard-box { height: 150px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; background: #fdfdfd; }
+        .csv-box { height: 250px; overflow-y: auto; border: 2px dashed #198754; padding: 10px; background: #f8fff9; }
+        .main-table-container { max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container-fluid p-4">
+        <!-- Header & Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="/" class="btn btn-outline-secondary btn-sm mb-2">← Back to Dashboard</a>
+                <h2 class="text-success">MongoDB Sharding Management</h2>
+                <p class="text-muted">Process: Main Mongo → Dept Shard → Parity CSV Shard</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-success">Status: NoSQL Mode</span>
+            </div>
+        </div>
+
+        <!-- Add Data Form -->
+        <div class="card shadow-sm mb-4 border-success">
+            <div class="card-header bg-success text-white">Add New Profile (NoSQL Pipeline)</div>
+            <div class="card-body">
+                <form action="/nosql/add" method="post" class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label">User ID (8 Digit)</label>
+                        <input name="id" class="form-control" placeholder="e.g. 10000051" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Full Name</label>
+                        <input name="name" class="form-control" placeholder="First Last" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Department</label>
+                        <select name="department" class="form-select">
+                            <option value="HR">HR</option>
+                            <option value="IT">IT</option>
+                            <option value="Engineering">Engineering</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Salary</label>
+                        <input name="salary" type="number" step="0.01" class="form-control" placeholder="50000" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Password</label>
+                        <input name="password" type="text" class="form-control" placeholder="Plain Text" required>
+                    </div>
+
+                    <!-- Hidden fields for the full 13-column schema -->
+                    <input type="hidden" name="contact" value="9876543210">
+                    <input type="hidden" name="email" value="user@example.com">
+                    <input type="hidden" name="address" value="Default Corporate Address">
+                    <input type="hidden" name="joining_date" value="2024-01-01">
+                    <input type="hidden" name="dob" value="1995-05-15">
+                    <input type="hidden" name="age" value="29">
+                    <input type="hidden" name="role" value="Staff">
+
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-success px-4">Process & Shard Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Side: Main MongoDB Data -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between">
+                        <span>Main MongoDB Collection (company_main.users)</span>
+                        <small>Editable Source</small>
+                    </div>
+                    <div class="card-body p-0 main-table-container">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Dept</th>
+                                    <th>Login ID</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in main_data %}
+                                <tr>
+                                    <td><strong>{{r.id}}</strong></td>
+                                    <td>{{r.name}}</td>
+                                    <td><span class="badge bg-info text-dark">{{r.department}}</span></td>
+                                    <td><code>{{r.login_id}}</code></td>
+                                    <td>
+                                        <a href="/nosql/delete/{{r.id}}/{{r.department}}" class="text-danger text-decoration-none" onclick="return confirm('Delete from Main and Dept Shard?')">Delete</a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="5" class="text-center p-4">No data found in Main MongoDB.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Department Shard Previews -->
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <h6>HR Shard (Mongo)</h6>
+                        <div class="shard-box">
+                            {% for r in shard_hr %}<div class="small">ID: {{r.id}} | {{r.name}}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>IT Shard (Mongo)</h6>
+                        <div class="shard-box">
+                            {% for r in shard_it %}<div class="small">ID: {{r.id}} | {{r.name}}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Eng Shard (Mongo)</h6>
+                        <div class="shard-box">
+                            {% for r in shard_eng %}<div class="small">ID: {{r.id}} | {{r.name}}</div>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Manual CSV Shards (Odd/Even Parity) -->
+            <div class="col-lg-4">
+                <div class="alert alert-success border-success">
+                    <strong>Manual Parity Sharding</strong><br>
+                    Data below is fetched directly from local CSV files based on ID parity.
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="text-danger d-flex justify-content-between">
+                        Odd ID Shard <small class="text-muted">nosql_odd_ids.csv</small>
+                    </h5>
+                    <div class="csv-box">
+                        {% for r in odd_ids %}
+                        <div class="border-bottom py-1">
+                            <span class="badge bg-danger">ID: {{r.id}}</span> <strong>{{r.name}}</strong><br>
+                            <small class="text-muted">Login: {{r.login_id}}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="text-primary d-flex justify-content-between">
+                        Even ID Shard <small class="text-muted">nosql_even_ids.csv</small>
+                    </h5>
+                    <div class="csv-box">
+                        {% for r in even_ids %}
+                        <div class="border-bottom py-1">
+                            <span class="badge bg-primary">ID: {{r.id}}</span> <strong>{{r.name}}</strong><br>
+                            <small class="text-muted">Login: {{r.login_id}}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

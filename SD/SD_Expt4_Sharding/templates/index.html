@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4 bg-light">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between mb-3">
+            <h2>Sharding Dashboard</h2>
+            <div>
+                <a href="/sql/manage" class="btn btn-primary">SQL Manage</a>
+                <a href="/nosql/manage" class="btn btn-success">NoSQL Manage</a>
+            </div>
+        </div>
+
+        <div class="card p-3 mb-4 shadow-sm">
+            <h5>ID Fetcher (Retrieve from Shard)</h5>
+            <form action="/search" method="post" class="row g-2">
+                <div class="col-3"><input name="uid" class="form-control" placeholder="Enter ID"></div>
+                <div class="col-2"><select name="mode" class="form-select"><option>SQL</option><option>NoSQL</option></select></div>
+                <div class="col-2"><button class="btn btn-dark w-100">Fetch from Shard</button></div>
+            </form>
+            {% if search_res %}<div class="mt-2 alert alert-info">Found in {{mode}} Parity Shard: <b>{{search_res.name}}</b> ({{search_res.department}})</div>{% endif %}
+        </div>
+
+        <div class="row text-center mb-4">
+            <div class="col-3"><a href="/shard_view/SQL/odd" class="btn btn-outline-primary w-100">SQL Odd Shard</a></div>
+            <div class="col-3"><a href="/shard_view/SQL/even" class="btn btn-outline-primary w-100">SQL Even Shard</a></div>
+            <div class="col-3"><a href="/shard_view/NOSQL/odd" class="btn btn-outline-success w-100">NoSQL Odd Shard</a></div>
+            <div class="col-3"><a href="/shard_view/NOSQL/even" class="btn btn-outline-success w-100">NoSQL Even Shard</a></div>
+        </div>
+
+        <div class="row">
+            <div class="col-6"><h6>MySQL Main</h6><table class="table table-sm bg-white">{% for r in sql_data %}<tr><td>{{r.id}}</td><td>{{r.name}}</td></tr>{% endfor %}</table></div>
+            <div class="col-6"><h6>Mongo Main</h6><table class="table table-sm bg-white">{% for r in nosql_data %}<tr><td>{{r.id}}</td><td>{{r.name}}</td></tr>{% endfor %}</table></div>
+        </div>
+    </div>
+</body>
+</html>
