@@ -1,0 +1,36 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "name": "Alice"
+        },
+        {
+            "id": 2,
+            "name": "Bob"
+        },
+        {
+            "id": 3,
+            "name": "chaitanya"
+        }
+    ],
+    "products": [
+        {
+            "id": 1,
+            "name": "Laptop",
+            "price": 50000
+        },
+        {
+            "id": 2,
+            "name": "Phone",
+            "price": 20000
+        }
+    ],
+    "orders": [
+        {
+            "id": 1,
+            "user": "chaitanya",
+            "product": "Laptop",
+            "price": 50000
+        }
+    ]
+}
